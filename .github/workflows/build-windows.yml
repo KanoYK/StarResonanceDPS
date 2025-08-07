@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       # 第 2 步：设置 Node.js 环境
-      # **重要：**将 node-version 升级到 22 以匹配依赖要求
+      # 仍然建议使用 Node.js 22 来避免潜在的版本问题
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -31,9 +31,11 @@ jobs:
         run: npm install
 
       # 第 4 步：构建 Windows 安装程序
-      # 现在 npm run build 会执行 npx electron-builder，确保命令能被找到
+      # **核心修改在这里**
+      # 我们不再运行 `npm run build`，而是直接调用 npx 来执行 electron-builder
+      # 这会忽略 package.json 中的 "build" 脚本，直接使用我们指定的正确命令
       - name: Build Windows installer
-        run: npm run build -- --win --x64
+        run: npx electron-builder --win --x64
 
       # 第 5 步：上传构建产物
       - name: Upload build artifact
