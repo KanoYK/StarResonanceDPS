@@ -1,0 +1,59 @@
+# .github/workflows/build-windows.yml
+
+name: Build Windows Application
+
+# 控制工作流的触发时机
+on:
+  # 允许你从 Actions 标签页手动运行此工作流
+  workflow_dispatch:
+
+  # 当有代码推送到 main 或 master 分支时触发
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-on-windows:
+    # 指定此任务运行在最新版的 Windows 服务器上
+    # 这对于构建 .exe 和处理原生模块（如 cap）至关重要
+    runs-on: windows-latest
+
+    steps:
+      # 第 1 步：检出你的仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 第 2 步：设置 Node.js 环境
+      # electron-builder 需要 Node.js 来运行
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # 使用一个稳定的LTS版本，与新版Electron兼容
+          cache: 'npm' # 缓存npm依赖，加快后续构建速度
+
+      # 第 3 步：安装项目依赖
+      # npm ci 会根据 package-lock.json 进行干净、快速的安装
+      # 如果你没有 lock 文件，也可以使用 npm install
+      - name: Install dependencies
+        run: npm install
+
+      # 第 4 步：构建 Windows 安装程序
+      # 运行 package.json 中的 "build" 脚本
+      # `electron-builder` 会自动处理原生模块（如 cap）的重新编译
+      # --win 参数明确指示只构建 Windows 版本，可以加速构建
+      # --x64 参数明确指定架构
+      - name: Build Windows installer
+        run: npm run build -- --win --x64
+
+      # 第 5 步：上传构建产物
+      # 将构建好的 .exe 安装程序上传，以便在工作流运行结束后下载
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # 上传产物的名称
+          name: stardps-windows-installer
+          # 要上传的文件路径
+          # electron-builder 默认输出到 dist 目录
+          # `*` 是一个通配符，可以匹配生成的文件名（通常包含版本号）
+          path: dist/*.exe
