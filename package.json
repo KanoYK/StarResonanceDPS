@@ -49,10 +49,10 @@
     ],
     "win": {
       "icon": "assets/icon.ico",
-      "target":  [
+      "target": [
         "nsis",
-        "zip"  
-      ]
+        "zip"
+      ],  // <--- 已添加缺失的逗号
       "requestedExecutionLevel": "requireAdministrator"
     },
     "mac": {
