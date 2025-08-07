@@ -1,57 +1,64 @@
-# .github/workflows/build-windows.yml
-
-name: Build Windows Application
-
-on:
-  workflow_dispatch: # 允许手动触发
-  push:
-    branches:
-      - main
-      - master
-
-jobs:
-  build-on-windows:
-    # 使用最新的 Windows Server 镜像
-    runs-on: windows-latest
-
-    steps:
-      # 1. 检出你的代码
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 2. 设置 Node.js 环境
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      # 3. 安装项目依赖
-      - name: Install dependencies
-        run: npm install
-
-      # 4. 重建原生模块 (关键步骤!)
-      # 针对 Electron 环境重新编译 cap 模块
-      - name: Rebuild native dependencies
-        run: npm run rebuild
-
-      # 5. 使用 electron-builder 打包应用
-      - name: Build Windows packages
-        run: npx electron-builder --win --x64 --publish never
-        # ▲▲▲ 之前出错的空 'env' 块已从这里移除 ▲▲▲
-
-      # 6. 上传 .exe 安装包作为构建产物
-      - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: stardps-windows-installer
-          path: dist/*.exe
-          if-no-files-found: error # 如果没找到文件则报错，帮助调试
-
-      # 7. 上传 .zip 便携版作为构建产物
-      - name: Upload Portable Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: stardps-windows-portable
-          path: dist/*.zip
-          if-no-files-found: error # 如果没找到文件则报错
+{
+  "name": "stardps",
+  "version": "2.1.0",
+  "description": "星痕共鸣第三方DPS统计工具",
+  "license": "ISC",
+  "author": "SATOU",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "dist": "npm run rebuild && electron-builder",
+    "rebuild": "electron-rebuild -f -w cap",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cap": "^0.2.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "protobufjs": "^7.2.5",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "electron": "^31.2.0",
+    "electron-builder": "^24.13.3",
+    // ▼▼▼ 核心修改在这里 ▼▼▼
+    "electron-rebuild": "^3.2.9"
+    // ▲▲▲ 将版本号改回一个确认存在的稳定版本 ▲▲▲
+  },
+  "build": {
+    "appId": "com.satou.stardps",
+    "productName": "星痕共鸣DPS统计工具",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "src/**/*",
+      "algo/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Utility"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
