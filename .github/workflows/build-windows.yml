@@ -20,8 +20,6 @@ jobs:
         uses: actions/checkout@v4
 
       # 2. 设置 Node.js 环境
-      # 建议使用与你 Electron 版本匹配的 Node.js 版本，但通常较新版本也能工作
-      # Electron 31 使用 Node.js 20.x，这里用 20 也是一个好选择
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -38,13 +36,9 @@ jobs:
         run: npm run rebuild
 
       # 5. 使用 electron-builder 打包应用
-      # 它会根据 package.json 的配置生成 .exe 和 .zip
       - name: Build Windows packages
         run: npx electron-builder --win --x64 --publish never
-        env:
-          # 如果需要代码签名，可以在这里设置环境变量
-          # CSC_LINK: ${{ secrets.CSC_LINK }}
-          # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # ▲▲▲ 之前出错的空 'env' 块已从这里移除 ▲▲▲
 
       # 6. 上传 .exe 安装包作为构建产物
       - name: Upload Installer Artifact
