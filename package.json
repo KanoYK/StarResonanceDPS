@@ -36,6 +36,9 @@
       "algo/**/*",
       "node_modules/**/*"
     ],
+    "asarUnpack": [
+      "**/node_modules/cap/**/*"
+    ],
     "win": {
       "icon": "assets/icon.ico",
       "target": [
