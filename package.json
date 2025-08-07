@@ -52,7 +52,7 @@
       "target": [
         "nsis",
         "zip"
-      ],  // <--- 已添加缺失的逗号
+      ], 
       "requestedExecutionLevel": "requireAdministrator"
     },
     "mac": {
