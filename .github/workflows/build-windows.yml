@@ -1,3 +1,5 @@
+# 这是 .github/workflows/build-windows.yml 文件的最终正确版本
+
 name: Build Windows Application
 
 on:
@@ -28,6 +30,7 @@ jobs:
         run: npm run rebuild
 
       - name: Build Windows packages
+        # 这一步会根据 package.json 的配置生成 .exe 和一个名为 win-unpacked 的文件夹
         run: npx electron-builder --win --x64 --publish never
 
       - name: Upload Installer Artifact
@@ -36,10 +39,13 @@ jobs:
           name: stardps-windows-installer
           path: dist/*.exe
           if-no-files-found: error
+      
+      - name: Create Portable Zip Package
+        run: Compress-Archive -Path dist/win-unpacked/* -DestinationPath stardps-windows-portable.zip
 
       - name: Upload Portable Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-portable
-          path: dist/*.zip
+          path: stardps-windows-portable.zip
           if-no-files-found: error
