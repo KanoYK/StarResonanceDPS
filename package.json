@@ -49,7 +49,10 @@
     ],
     "win": {
       "icon": "assets/icon.ico",
-      "target": "nsis",
+      "target":  [
+        "nsis",
+        "zip"  
+      ]
       "requestedExecutionLevel": "requireAdministrator"
     },
     "mac": {
