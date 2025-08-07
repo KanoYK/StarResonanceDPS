@@ -26,14 +26,23 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # **核心修改在这里**
-      # 添加 `--publish never` 参数来禁止自动发布到 GitHub Release
-      - name: Build Windows installer
+      # 这一步不需要修改，它会根据 package.json 的配置进行构建
+      - name: Build Windows installer and portable package
         run: npx electron-builder --win --x64 --publish never
 
-      # 这一步会照常工作，将构建好的 .exe 上传为可下载的 artifact
-      - name: Upload build artifact
+      # **核心修改在这里**
+      # 分别上传安装程序和便携版压缩包
+
+      # 上传 .exe 安装程序
+      - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-installer
           path: dist/*.exe
+
+      # 上传 .zip 便携版
+      - name: Upload Portable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stardps-windows-portable
+          path: dist/*.zip
