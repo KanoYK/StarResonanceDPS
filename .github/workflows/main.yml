@@ -3,12 +3,12 @@ name: Build EXE
 on:
   push:
     branches: [main]
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest # 使用 Windows 环境打包 EXE
-
+    runs-on: windows-latest
+    
     steps:
     - uses: actions/checkout@v4
 
@@ -16,15 +16,26 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 18
+        cache: 'npm'  # 添加缓存优化构建速度
 
     - name: Install Dependencies
-      run: npm install
+      run: npm ci  # 更安全的依赖安装方式
 
     - name: Build EXE
       run: npm run build
 
+    # 修复点：更新到 v4 版本的 upload-artifact
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: DPS.exe
+        name: app-executable
         path: dist/app.exe
+        retention-days: 7  # 自动清理旧构建
+
+    # 可选：自动创建 Release (需要 tag 触发)
+    - name: Create Release
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/app.exe
+        generate_release_notes: true
