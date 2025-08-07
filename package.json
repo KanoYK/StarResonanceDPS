@@ -7,14 +7,11 @@
   "type": "commonjs",
   "main": "main.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron .",
     "dev": "NODE_ENV=development electron .",
-    "build": "electron-builder",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "dist": "npm run rebuild && electron-builder",
+    "rebuild": "electron-rebuild -f -w cap",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "cap": "^0.2.1",
@@ -23,17 +20,9 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.8.2",
-    "@electron-forge/maker-deb": "^7.8.2",
-    "@electron-forge/maker-rpm": "^7.8.2",
-    "@electron-forge/maker-squirrel": "^7.8.2",
-    "@electron-forge/maker-zip": "^7.8.2",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.8.2",
-    "@electron-forge/plugin-fuses": "^7.8.2",
-    "@electron/fuses": "^2.0.0",
-    "@electron/rebuild": "^4.0.1",
-    "electron": "^37.2.5",
-    "electron-rebuild": "^3.2.9"
+    "electron": "^31.2.0",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.6.0"
   },
   "build": {
     "appId": "com.satou.stardps",
@@ -51,8 +40,8 @@
       "icon": "assets/icon.ico",
       "target": [
         "nsis",
-        "dir"
-      ], 
+        "portable"
+      ],
       "requestedExecutionLevel": "requireAdministrator"
     },
     "mac": {
