@@ -1,70 +1,45 @@
-{
-  "name": "stardps",
-  "version": "2.1.0",
-  "description": "星痕共鸣第三方DPS统计工具",
-  "license": "ISC",
-  "author": "SATOU",
-  "type": "commonjs",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron-forge start",
-    "dev": "NODE_ENV=development electron .",
-    "build": "electron-builder",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
-  },
-  "dependencies": {
-    "cap": "^0.2.1",
-    "electron-squirrel-startup": "^1.0.1",
-    "protobufjs": "^7.2.5",
-    "winston": "^3.11.0"
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^7.8.2",
-    "@electron-forge/maker-deb": "^7.8.2",
-    "@electron-forge/maker-rpm": "^7.8.2",
-    "@electron-forge/maker-squirrel": "^7.8.2",
-    "@electron-forge/maker-zip": "^7.8.2",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.8.2",
-    "@electron-forge/plugin-fuses": "^7.8.2",
-    "@electron/fuses": "^2.0.0",
-    "@electron/rebuild": "^4.0.1",
-    "electron": "^37.2.5",
-    "electron-rebuild": "^3.2.9"
-  },
-  "build": {
-    "appId": "com.satou.stardps",
-    "productName": "星痕共鸣DPS统计工具",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "src/**/*",
-      "algo/**/*",
-      "node_modules/**/*"
-    ],
-    "win": {
-      "icon": "assets/icon.ico",
-      "target": "nsis",
-      "requestedExecutionLevel": "requireAdministrator"
-    },
-    "mac": {
-      "icon": "assets/icon.icns",
-      "category": "public.app-category.utilities"
-    },
-    "linux": {
-      "icon": "assets/icon.png",
-      "category": "Utility"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
-  }
-}
+# .github/workflows/build-windows.yml
+
+name: Build Windows Application
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-on-windows:
+    runs-on: windows-latest
+
+    steps:
+      # 第 1 步：检出你的仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 第 2 步：设置 Node.js 环境
+      # 仍然建议使用 Node.js 22 来避免潜在的版本问题
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      # 第 3 步：安装项目依赖
+      - name: Install dependencies
+        run: npm install
+
+      # 第 4 步：构建 Windows 安装程序
+      # **核心修改在这里**
+      # 我们不再运行 `npm run build`，而是直接调用 npx 来执行 electron-builder
+      # 这会忽略 package.json 中的 "build" 脚本，直接使用我们指定的正确命令
+      - name: Build Windows installer
+        run: npx electron-builder --win --x64
+
+      # 第 5 步：上传构建产物
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stardps-windows-installer
+          path: dist/*.exe
