@@ -14,31 +14,27 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 第 1 步：检出你的仓库代码
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 第 2 步：设置 Node.js 环境
-      # 仍然建议使用 Node.js 22 来避免潜在的版本问题
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
-      # 第 3 步：安装项目依赖
       - name: Install dependencies
         run: npm install
 
-      # 第 4 步：构建 Windows 安装程序
       # **核心修改在这里**
-      # 我们不再运行 `npm run build`，而是直接调用 npx 来执行 electron-builder
-      # 这会忽略 package.json 中的 "build" 脚本，直接使用我们指定的正确命令
-      - name: Build Windows installer
+      # 我们在执行命令前，设置了 GH_TOKEN 环境变量
+      - name: Build and Publish to Draft Release
         run: npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 第 5 步：上传构建产物
-      - name: Upload build artifact
+      # 这一步可以保留也可以删除，因为文件已经被上传到 Release 了
+      - name: Upload build artifact (Optional)
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-installer
