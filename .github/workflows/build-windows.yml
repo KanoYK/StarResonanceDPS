@@ -26,23 +26,26 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 这一步不需要修改，它会根据 package.json 的配置进行构建
-      - name: Build Windows installer and portable package
+      # 这一步会生成 .exe 和一个 win-unpacked 文件夹
+      - name: Build Windows installer and directory
         run: npx electron-builder --win --x64 --publish never
 
-      # **核心修改在这里**
-      # 分别上传安装程序和便携版压缩包
-
-      # 上传 .exe 安装程序
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-installer
           path: dist/*.exe
 
-      # 上传 .zip 便携版
+      # **核心修改在这里**
+      # 先将 win-unpacked 目录压缩成 zip，再上传
+      - name: Create Portable Zip Package
+        # tar 命令在 Windows runner 上可用，czf 表示创建(c)、压缩(z)、指定文件名(f)
+        # -C 选项让它在打包前先切换到 dist/win-unpacked 目录，这样 zip 包内不会包含多余的父目录
+        run: tar -czf stardps-windows-portable.zip -C dist/win-unpacked .
+        
       - name: Upload Portable Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-portable
-          path: dist/*.zip
+          # 上传刚刚创建的 zip 文件
+          path: stardps-windows-portable.zip
