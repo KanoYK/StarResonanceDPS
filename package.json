@@ -51,7 +51,7 @@
       "icon": "assets/icon.ico",
       "target": [
         "nsis",
-        "portable"
+        "dir"
       ], 
       "requestedExecutionLevel": "requireAdministrator"
     },
