@@ -1,0 +1,30 @@
+name: Build EXE
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  build:
+    runs-on: windows-latest # 使用 Windows 环境打包 EXE
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build EXE
+      run: npm run build
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: DPS.exe
+        path: dist/app.exe
