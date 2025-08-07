@@ -3,7 +3,7 @@
 name: Build Windows Application
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 允许手动触发
   push:
     branches:
       - main
@@ -11,41 +11,53 @@ on:
 
 jobs:
   build-on-windows:
+    # 使用最新的 Windows Server 镜像
     runs-on: windows-latest
 
     steps:
+      # 1. 检出你的代码
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. 设置 Node.js 环境
+      # 建议使用与你 Electron 版本匹配的 Node.js 版本，但通常较新版本也能工作
+      # Electron 31 使用 Node.js 20.x，这里用 20 也是一个好选择
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: 'npm'
 
+      # 3. 安装项目依赖
       - name: Install dependencies
         run: npm install
 
-      # 这一步会生成 .exe 和一个 win-unpacked 文件夹
-      - name: Build Windows installer and directory
-        run: npx electron-builder --win --x64 --publish never
+      # 4. 重建原生模块 (关键步骤!)
+      # 针对 Electron 环境重新编译 cap 模块
+      - name: Rebuild native dependencies
+        run: npm run rebuild
 
+      # 5. 使用 electron-builder 打包应用
+      # 它会根据 package.json 的配置生成 .exe 和 .zip
+      - name: Build Windows packages
+        run: npx electron-builder --win --x64 --publish never
+        env:
+          # 如果需要代码签名，可以在这里设置环境变量
+          # CSC_LINK: ${{ secrets.CSC_LINK }}
+          # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+
+      # 6. 上传 .exe 安装包作为构建产物
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-installer
           path: dist/*.exe
+          if-no-files-found: error # 如果没找到文件则报错，帮助调试
 
-      # **核心修改在这里**
-      # 先将 win-unpacked 目录压缩成 zip，再上传
-      - name: Create Portable Zip Package
-        # tar 命令在 Windows runner 上可用，czf 表示创建(c)、压缩(z)、指定文件名(f)
-        # -C 选项让它在打包前先切换到 dist/win-unpacked 目录，这样 zip 包内不会包含多余的父目录
-        run: tar -czf stardps-windows-portable.zip -C dist/win-unpacked .
-        
+      # 7. 上传 .zip 便携版作为构建产物
       - name: Upload Portable Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stardps-windows-portable
-          # 上传刚刚创建的 zip 文件
-          path: stardps-windows-portable.zip
+          path: dist/*.zip
+          if-no-files-found: error # 如果没找到文件则报错
