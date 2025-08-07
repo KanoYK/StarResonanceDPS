@@ -24,14 +24,7 @@ jobs:
         node-version: 18
         cache: 'npm'
         
-    # 安装构建工具和原生模块依赖
-    - name: Install build tools
-      run: |
-        npm install -g electron-builder
-        npm install -g node-gyp
-        npm install --global windows-build-tools
-        
-    # 缓存 Electron 和构建工具
+    # 缓存 Electron 和构建工具 - 关键优化点
     - name: Cache Electron binaries
       uses: actions/cache@v4
       with:
@@ -41,18 +34,23 @@ jobs:
           ${{ github.workspace }}/node_modules
         key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}-v1
         
-    - name: Install dependencies
+    # 仅安装必要的全局工具
+    - name: Install global dependencies
+      run: npm install -g electron-builder@24.18.0 node-gyp
+      
+    - name: Install project dependencies
       run: npm ci
       
-    # 重建原生模块
+    # 重建原生模块 - 针对 Electron 版本
     - name: Rebuild native modules
       run: |
         npm rebuild --runtime=electron --target=37.2.5 --disturl=https://electronjs.org/headers
         
-    # 创建必要的资源目录（如果不存在）
+    # 确保资源目录存在
     - name: Prepare assets directory
       run: |
         mkdir -p assets
+        # 如果图标文件不存在则创建占位符
         if not exist assets/icon.ico (echo. > assets/icon.ico)
         
     - name: Build application
